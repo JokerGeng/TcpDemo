@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\TCPLibrary\TCPLibrary.csproj" />
+    <ProjectReference Include="..\SocketLibrary\SocketLibrary.csproj" />
   </ItemGroup>
 
 </Project>

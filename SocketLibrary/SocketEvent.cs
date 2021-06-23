@@ -20,7 +20,7 @@ namespace SocketLibrary
         {
             if (ConnectInfo != null)
             {
-                ConnectInfo(sender, new ConnectEventArgs(args));
+                ConnectInfo.Invoke(sender, new ConnectEventArgs(args));
             }
         }
 
@@ -34,7 +34,7 @@ namespace SocketLibrary
         {
             if (RecvInfo != null)
             {
-                RecvInfo(sender, new RecvInfoEventArgs(args));
+                RecvInfo.Invoke(sender, new RecvInfoEventArgs(args));
             }
         }
 
@@ -46,7 +46,7 @@ namespace SocketLibrary
         {
             if (CloseInfo != null)
             {
-                CloseInfo(sender, new CloseEventArgs(args));
+                CloseInfo.Invoke(sender, new CloseEventArgs(args));
             }
         }
 
@@ -58,7 +58,7 @@ namespace SocketLibrary
         {
             if (AcceptInfo != null)
             {
-                AcceptInfo(sender, new AcceptEventArgs(args));
+                AcceptInfo.Invoke(sender, new AcceptEventArgs(args));
             }
         }
 
@@ -67,7 +67,7 @@ namespace SocketLibrary
         {
             if (SendInfo != null)
             {
-                SendInfo(sender, new SendEventArgs(args));
+                SendInfo.Invoke(sender, new SendEventArgs(args));
             }
         }
 

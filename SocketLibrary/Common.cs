@@ -25,6 +25,31 @@ namespace SocketLibrary
             return null;
         }
 
+        public static IPAddress GetLocalIP(bool isIpv4=true)
+        {
+            string hostName = Dns.GetHostName();
+            IPHostEntry localHost = Dns.GetHostEntry(hostName);
+
+            foreach (var address in localHost.AddressList)
+            {
+                if(isIpv4)
+                {
+                    if (address.AddressFamily == AddressFamily.InterNetwork)
+                    {
+                        return address;
+                    }
+                }
+                else
+                {
+                    if (address.AddressFamily == AddressFamily.InterNetworkV6)
+                    {
+                        return address;
+                    }
+                }
+            }
+            return null;
+        }
+
         /// <summary>
         /// 获取当前系统时间的方法
         /// </summary>

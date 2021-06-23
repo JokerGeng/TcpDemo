@@ -7,44 +7,34 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace TCPLibrary
+namespace SocketLibrary
 {
-    public class MyTcpServer
+    public class SocketServer
     {
-        Thread threadWatch = null; //负责监听客户端的线程
         Socket socketWatch = null; //负责监听客户端的套接字     
 
         Dictionary<string, Socket> dictClients = new Dictionary<string, Socket>(); //套接字集合
-
         string strKey = "";
 
-        public MyTcpServer(int port)
+        public SocketServer(int port)
         {
             socketWatch = new Socket(SocketType.Stream, ProtocolType.Tcp);
-                        
-            IPAddress ipaddress = Common.GetLocalIP(); 
-                                                                            
+
+            IPAddress ipaddress = Common.GetLocalIP();
+
             IPEndPoint endpoint = new IPEndPoint(ipaddress, port); //将IP地址和端口号绑定到网络节点endpoint上 
-                                                                   
+
             socketWatch.Bind(endpoint);//监听绑定的网络节点
-            
+
             socketWatch.Listen(20);//将套接字的监听队列长度限制为20
 
             Task.Factory.StartNew(WatchConnecting, TaskCreationOptions.LongRunning);
-            //创建一个监听委托
-            ThreadStart ts = new ThreadStart(WatchConnecting);
-            //创建一个监听线程 
-            threadWatch = new Thread(ts);
-            //将窗体线程设置为与后台同步
-            threadWatch.IsBackground = true;
-            //启动线程
-            threadWatch.Start();
         }
 
         /// <summary>
         /// 监听客户端发来的请求
         /// </summary>
-        private async void  WatchConnecting()
+        private async void WatchConnecting()
         {
             while (true)  //持续不断监听客户端发来的请求
             {
@@ -86,7 +76,7 @@ namespace TCPLibrary
                     Console.WriteLine(length);
                     if (strSRecMsg.Length != 0)
                     {
-                        Console.WriteLine("服务端接收" + client.RemoteEndPoint.ToString() + GetCurrentTime() + "\r\n" + strSRecMsg + "\r\n");
+                        Console.WriteLine("服务端接收" + client.RemoteEndPoint.ToString() + Common.GetCurrentTime() + "\r\n" + strSRecMsg + "\r\n");
                     }
 
                 }
@@ -109,7 +99,7 @@ namespace TCPLibrary
                 byte[] arrSendMsg = Encoding.UTF8.GetBytes(sendMsg);
                 //向客户端发送字节数组信息
                 dictClients[strKey].Send(arrSendMsg);// 解决了 sokConnection是局部变量，不能再本函数中引用的问题；
-                Console.WriteLine("服务端发送至" + dictClients[strKey].RemoteEndPoint.ToString() + GetCurrentTime() + "\r\n" + sendMsg + "\r\n");
+                Console.WriteLine("服务端发送至" + dictClients[strKey].RemoteEndPoint.ToString() + Common.GetCurrentTime() + "\r\n" + sendMsg + "\r\n");
 
             }
             catch (Exception ex)
@@ -117,58 +107,5 @@ namespace TCPLibrary
                 Console.WriteLine("错误：" + ex.ToString());
             }
         }
-
-        /// <summary>
-        /// 获取当前系统时间的方法
-        /// </summary>
-        /// <returns>当前时间</returns>
-        private DateTime GetCurrentTime()
-        {
-            DateTime currentTime = new DateTime();
-            currentTime = DateTime.Now;
-            return currentTime;
-        }
-
-        //客户端列表
-        //    List<TcpCom> m_ClientComs = new List<TcpCom>();
-        //    TcpListen m_tcplisten;
-        //    public List<TcpCom> ClientComs
-        //    {
-        //        get { return m_ClientComs; }
-        //        set { m_ClientComs = value; }
-        //    }
-
-        //    public void BeginListen(int nPort)
-        //    {
-        //        m_tcplisten = new TcpListen();
-        //        m_tcplisten.BeginListen(nPort);
-        //        m_tcplisten.tcpEvent.AcceptInfo += TcpEvent_AcceptInfo; ;
-        //    }
-
-
-        //    /******************************接收监听**********************************/
-        //    void TcpEvent_AcceptInfo(object sender, AcceptEventArgs e)
-        //    {
-        //        TcpCom commNew = (TcpCom)e.Info;
-        //        m_ClientComs.Add(commNew);
-
-        //        commNew.StartReceive();
-        //        commNew.tcpEvent.RecvInfo += TcpEvent_RecvInfo; ;
-        //        commNew.tcpEvent.CloseInfo += TcpEvent_CloseInfo; ;
-        //    }
-
-        //    /******************************连接断开**********************************/
-        //    private void TcpEvent_CloseInfo(object sender, CloseEventArgs e)
-        //    {
-        //        Console.WriteLine("tcp close");
-        //        //throw new NotImplementedException();
-        //    }
-
-        //    /******************************接受数据**********************************/
-        //    private void TcpEvent_RecvInfo(object sender, RecvInfoEventArgs e)
-        //    {
-        //        Console.WriteLine("recv:{0}", e.Info);
-        //        //throw new NotImplementedException();
-        //    }
     }
 }

@@ -16,19 +16,35 @@ namespace SocketLibrary
         byte[] m_nRecvBuffer = new byte[10 * 1024];
         String m_strRecvBuf;
 
+        public SocketEvent SocketEvent { get => m_socketEvent; set => m_socketEvent = value; }
+
         public SocketComm(Socket client)
         {
             m_client = client;
-            m_socketEvent = new SocketEvent();
+            SocketEvent = new SocketEvent();
+            BeginRecieveInfo();
         }
 
-        public void BeginRecieveInfo()
+        private void BeginRecieveInfo()
         {
             Task.Factory.StartNew(RecMsg, TaskCreationOptions.LongRunning);
-            m_socketEvent.SendInfo += M_socketEvent_SendInfo;
+            SocketEvent.SendInfo += SocketEvent_SendInfo;
+            SocketEvent.CloseInfo += SocketEvent_CloseInfo;
         }
 
-        private void M_socketEvent_SendInfo(object sender, SendEventArgs e)
+        private void SocketEvent_CloseInfo(object sender, CloseEventArgs e)
+        {
+            try
+            {
+                m_client?.Close();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("错误信息：" + ex.ToString());
+            }
+        }
+
+        private void SocketEvent_SendInfo(object sender, SendEventArgs e)
         {
             try
             {
@@ -37,8 +53,6 @@ namespace SocketLibrary
 
                 //调用客户端套接字发送字节数组
                 m_client?.Send(arrClientSendMsg);
-
-
             }
             catch (Exception ex)
             {
@@ -56,15 +70,19 @@ namespace SocketLibrary
                     byte[] arrRecMsg = new byte[1024 * 1024];
                     //将客户端套接字接收到的数据存入内存缓冲区, 并获取其长度
                     int length = m_client.Receive(arrRecMsg);
-                    //将套接字获取到的字节数组转换为人可以看懂的字符串
-                    string strRecMsg = Encoding.UTF8.GetString(arrRecMsg, 0, length);
+                    if(length>0)
+                    {
+                        //将套接字获取到的字节数组转换为人可以看懂的字符串
+                        string strRecMsg = Encoding.UTF8.GetString(arrRecMsg, 0, length);
 
-                    //转发
-                    m_socketEvent.OnRecvInfo(m_client, strRecMsg);
+                        //转发
+                        SocketEvent.OnRecvInfo(m_client, strRecMsg);
 
-                    ////string strRecMsg = Encoding.UTF8.GetString(arrRecMsg, 2, length);
-                    ////将发送的信息追加到聊天内容文本框中
-                    Console.WriteLine(m_client.RemoteEndPoint.ToString() + "服务端 " + Common.GetCurrentTime() + "\r\n" + strRecMsg + "\r\n");
+                        ////string strRecMsg = Encoding.UTF8.GetString(arrRecMsg, 2, length);
+                        ////将发送的信息追加到聊天内容文本框中
+                        Console.WriteLine(m_client.RemoteEndPoint.ToString() + "服务端 " + Common.GetCurrentTime() + "\r\n" + strRecMsg + "\r\n");
+                    }
+
                 }
                 catch (Exception ex)
                 {
