@@ -1,21 +1,20 @@
 ﻿using SocketLibrary;
 using System;
 using System.Threading;
+using System.Xml.Linq;
+using System.IO;
+using System.Text;
+using System.Reflection;
+using System.Xml;
+using System.Xml.Serialization;
+using System.Collections.Generic;
 
 namespace TestTcp
 {
     class Program
     {
         static void Main(string[] args)
-        {
-            //    MyTcpServer server = new MyTcpServer(6666);
-
-            //    MyTcpClient client1 = new MyTcpClient(6666);
-            //    client1.SendMsg("client1");
-
-            //    MyTcpClient client2 = new MyTcpClient(6666);
-            //    client2.SendMsg("client2");
-
+        { 
             SocketServer server = new SocketServer(6666);
 
             SocketClient client1 = new SocketClient();
@@ -29,7 +28,23 @@ namespace TestTcp
 
             client1.SendMessage("client1");
 
+            client2.SendMessage("client2");
+
+            server.ServerSendMsg("hhh");
+
             Console.Read();
         }
+    }
+
+    public class Info
+    {
+        public Info()
+        {
+
+        }
+
+        public string Name { get; set; }
+
+        public int State { get; set; }
     }
 }

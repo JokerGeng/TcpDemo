@@ -34,19 +34,17 @@ namespace SocketLibrary
         /// <summary>
         /// 监听客户端发来的请求
         /// </summary>
-        private async void WatchConnecting()
+        private void WatchConnecting()
         {
             while (true)  //持续不断监听客户端发来的请求
             {
                 try
                 {
-
-                    var client = await socketWatch.AcceptAsync();  //等待客户端的连接 并且创建一个负责通信的Socket   
-                    // 将与客户端连接的 套接字 对象添加到集合中；
+                    var client = socketWatch.Accept();  
                     dictClients.Add(client.RemoteEndPoint.ToString(), client);
                     strKey = client.RemoteEndPoint.ToString();
                     Console.WriteLine("客户端:{0}连接成功! " + "\r\n", client.RemoteEndPoint.ToString());
-                    await Task.Factory.StartNew(ServerRecMsg, client, TaskCreationOptions.LongRunning);
+                     Task.Factory.StartNew(ServerRecMsg, client, TaskCreationOptions.LongRunning);
                 }
                 catch (Exception ex)
                 {
@@ -69,14 +67,16 @@ namespace SocketLibrary
                 byte[] arrServerRecMsg = new byte[1024 * 1024];
                 try
                 {
-                    //将接收到的信息存入到内存缓冲区,并返回其字节数组的长度
-                    int length = client.Receive(arrServerRecMsg);
-                    //将机器接受到的字节数组转换为人可以读懂的字符串
-                    string strSRecMsg = Encoding.UTF8.GetString(arrServerRecMsg, 0, length);
-                    Console.WriteLine(length);
-                    if (strSRecMsg.Length != 0)
+                    if(client.Connected)
                     {
-                        Console.WriteLine("服务端接收" + client.RemoteEndPoint.ToString() + Common.GetCurrentTime() + "\r\n" + strSRecMsg + "\r\n");
+                        //将接收到的信息存入到内存缓冲区,并返回其字节数组的长度
+                        int length = client.Receive(arrServerRecMsg);
+                        //将机器接受到的字节数组转换为人可以读懂的字符串
+                        string strSRecMsg = Encoding.UTF8.GetString(arrServerRecMsg, 0, length);
+                        if (strSRecMsg.Length != 0)
+                        {
+                            Console.WriteLine("服务端接收:" + client.RemoteEndPoint.ToString() + "\r\n" + "时间:" + Common.GetCurrentTime() + "\r\n" + "Mesage:" + strSRecMsg + "\r\n");
+                        }
                     }
 
                 }
@@ -95,12 +95,14 @@ namespace SocketLibrary
         {
             try
             {
-                //将输入的字符串转换成 机器可以识别的字节数组
-                byte[] arrSendMsg = Encoding.UTF8.GetBytes(sendMsg);
-                //向客户端发送字节数组信息
-                dictClients[strKey].Send(arrSendMsg);// 解决了 sokConnection是局部变量，不能再本函数中引用的问题；
-                Console.WriteLine("服务端发送至" + dictClients[strKey].RemoteEndPoint.ToString() + Common.GetCurrentTime() + "\r\n" + sendMsg + "\r\n");
-
+                if(dictClients.ContainsKey(strKey))
+                {
+                    //将输入的字符串转换成 机器可以识别的字节数组
+                    byte[] arrSendMsg = Encoding.UTF8.GetBytes(sendMsg);
+                    //向客户端发送字节数组信息
+                    dictClients[strKey].Send(arrSendMsg);// 
+                    Console.WriteLine("服务端发送至:" + dictClients[strKey].RemoteEndPoint.ToString() + "\r\n" + "时间:" + Common.GetCurrentTime() + "\r\n" + "Message:" + sendMsg + "\r\n");
+                }
             }
             catch (Exception ex)
             {
